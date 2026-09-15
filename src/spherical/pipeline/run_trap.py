@@ -34,7 +34,6 @@ from trap.reduction_wrapper import run_complete_reduction
 
 from spherical.database.ifs_observation import IFSObservation
 from spherical.database.irdis_observation import IRDISObservation
-from spherical.pipeline import ifs_reduction, irdis_reduction
 from spherical.pipeline.ivar_badpixels import bad_pixel_mask_from_ivar
 from spherical.pipeline.logging_utils import (
     PipelineLoggerAdapter,
@@ -48,6 +47,7 @@ from spherical.pipeline.pipeline_config import (
     IRDISReductionConfig,
     _absolute,
 )
+from spherical.pipeline.products import converted_directory_for
 from spherical.pipeline.step_registry import StepDirs, _forced, should_run, validate_force, write_marker
 from spherical.pipeline.toolbox import make_target_folder_string
 
@@ -145,7 +145,9 @@ def _result_folder_for(
 
     Both IFS and IRDIS use ``{reduction_directory}/{instrument}/trap/{name_mode_date}``.
     No ``{method}`` segment — matches the historical IFS path (which also omits
-    it) and the IRDIS layout in the design spec §2.
+    it) and the IRDIS layout in the design spec §2. The layout is defined once
+    in :mod:`spherical.pipeline.products`; this wrapper keeps the string-based
+    signature used below.
     """
     return os.path.join(reduction_directory, f"{instrument}/trap", name_mode_date)
 
@@ -157,27 +159,11 @@ def _data_directory_for(
 ) -> str:
     """Return the ``converted/`` data directory for *observation*.
 
-    IFS uses :func:`spherical.pipeline.ifs_reduction.output_directory_path`,
-    which already includes both the extraction method segment and the
-    trailing ``converted/``. IRDIS uses
-    :func:`spherical.pipeline.irdis_reduction.output_directory_path`, which
-    returns the observation-level directory (no method segment); the
-    ``converted/`` suffix is appended here so run_trap always sees the same
-    layout it does for IFS.
+    Delegates to :func:`spherical.pipeline.products.converted_directory_for`,
+    which is importable without trap/charis so external tools resolve the same
+    directory; the trailing separator matches the historical IFS return value.
     """
-    if instrument == "IFS":
-        return ifs_reduction.output_directory_path(
-            str(reduction_config.directories.reduction_directory),
-            observation,
-            method=reduction_config.extraction.method,
-        )
-    return os.path.join(
-        irdis_reduction.output_directory_path(
-            str(reduction_config.directories.reduction_directory),
-            observation,
-        ),
-        "converted",
-    )
+    return os.path.join(str(converted_directory_for(observation, reduction_config)), "")
 
 
 def _resolve_coronagraph_transmission(
