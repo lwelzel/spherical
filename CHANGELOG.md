@@ -9,15 +9,6 @@ This project follows [Semantic Versioning](https://semver.org/) and the [Keep a 
 ## [Unreleased]
 
 ### ✨ Added
-- **`spherical.pipeline.products`** – `converted_directory_for()`, `trap_result_folder_for()`,
-  `observation_directory_for()` and `target_folder_string()` resolve where the pipeline writes
-  its products for an observation and a configuration, with standard-library imports only.
-  External post-processing tools (e.g. `reducer`) can locate `converted/` without importing
-  `run_trap` and therefore without charis/trap installed. `run_trap._data_directory_for` now
-  delegates to it, so the layout is defined once.
-- **`config_to_dict()` / `config_from_dict()`** in `pipeline_config` – plain, YAML-serialisable
-  round trip of `IFSReductionConfig` / `IRDISReductionConfig` (paths and the `steps.force` set
-  converted), for writing the configuration next to the products as provenance.
 
 ### 🔧 Changed
 
